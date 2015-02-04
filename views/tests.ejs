@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script charset="utf-8" src="/javascripts/jquery.js"></script>
+    <script charset="utf-8" src="/javascripts/form.jquery.js"></script>
+    <script charset="utf-8" src="/javascripts/curves.js"></script>
+    <script charset="utf-8" src="/javascripts/slidercalc.js"></script>
+    <script charset="utf-8" src="/javascripts/osu.js"></script>
+    <script charset="utf-8" src="/javascripts/parser.osu.js"></script>
+    <script charset="utf-8">
+      var mapTimings = [];
+
+      function parse(){
+        console.log(Osu.Parser.parse($('#parser').val()));
+      }
+
+      $(document).ready(function(){
+        ctx = new webkitAudioContext();
+        src = null;
+        $('#osz_upload').ajaxForm({
+          success: function(res){
+            console.log(res);
+            $.each(res.beatmaps, function(i,e){
+              console.log(e);
+              if(e.Version === Osu.Difficulty.NORMAL){
+
+              }
+            });
+            $('#beatmap_img').attr('src', "/beatmap_data/" + res.image);
+            $('#beatmap_music').attr('src', "/beatmap_data/" + res.music);
+            var req = new XMLHttpRequest();
+            req.open("GET","/beatmap_data/" + res.music,true);
+            req.responseType = "arraybuffer";
+            req.onload = function() {
+              //decode the loaded data
+              ctx.decodeAudioData(req.response, function(buffer) {
+                buf = buffer;
+                //create a source node from the buffer
+                src = ctx.createBufferSource();
+                src.buffer = buf;
+                //connect to the final output node (the speakers)
+                src.connect(ctx.destination);
+                //play immediately
+                src.start();
+              });
+            };
+            req.send();
+          }
+        });
+      });
+
+      function mapCircle(x, y){
+        $circle = $("<div class='hit_circle pink'>1</div>");
+        $circle.css('left', x).css('top', y);
+        $('body').append($circle);
+        return $circle;
+      }
+    </script>
+  </head>
+  <body>
+    <h1>osu!web unit tests</h1>
+    <h2>osu file format parser</h2>
+    <textarea placeholder=".osu file" id="parser"></textarea><br>
+    <button onclick="parse()">parse</button>
+    <h2>osz extractor</h2>
+    <form id="osz_upload" action="/extract" method="post">
+      <input type="file" name="osz_file" value=".osz file"><br>
+      <img id="beatmap_img" style="max-height: 200px;"></img><br>
+      <audio id="beatmap_music" controls></audio><br>
+      <button>extract</button>
+    </form>
+    <h2>hit circles</h2>
+    <div class="hit_circle blue relative">1</div>
+    <div class="hit_circle pink relative">3</div>
+    <div id="playfield"></div>
+  </body>
+</html>

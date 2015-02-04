@@ -8,6 +8,13 @@ var routes = require('./routes');
 var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
+var busboy = require('connect-busboy');
+var rimraf = require('rimraf'),
+    mkdirp = require('mkdirp');
+
+rimraf(__dirname + "/public/beatmap_data", function(){
+  mkdirp(__dirname + "/public/beatmap_data");
+});
 
 var app = express();
 
@@ -20,6 +27,7 @@ app.use(express.logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded());
 app.use(express.methodOverride());
+app.use(busboy());
 app.use(app.router);
 app.use(require('stylus').middleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -30,6 +38,8 @@ if ('development' == app.get('env')) {
 }
 
 app.get('/', routes.index);
+app.get('/tests', routes.tests);
+app.post('/extract', routes.extract);
 app.get('/users', user.list);
 
 http.createServer(app).listen(app.get('port'), function(){
