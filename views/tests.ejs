@@ -19,13 +19,14 @@
       $(document).ready(function(){
         ctx = new webkitAudioContext();
         src = null;
+        beatmap = {};
         $('#osz_upload').ajaxForm({
           success: function(res){
             console.log(res);
             $.each(res.beatmaps, function(i,e){
               console.log(e);
               if(e.Version === Osu.Difficulty.NORMAL){
-
+                beatmap = e;
               }
             });
             $('#beatmap_img').attr('src', "/beatmap_data/" + res.image);
@@ -44,6 +45,19 @@
                 src.connect(ctx.destination);
                 //play immediately
                 src.start();
+                $.each(beatmap.hitObjects, function(i, e){
+                  if(e.objectName === "circle"){
+                    var circle;
+                    setTimeout(function(){
+                      circle = mapCircle(e.position[0], e.position[1]);
+                      circle.fadeIn();
+                    }, e.startTime);
+
+                    setTimeout(function(){
+                      circle.fadeOut('fast');
+                    }, e.startTime + 2000);
+                  }
+                });
               });
             };
             req.send();
@@ -54,7 +68,7 @@
       function mapCircle(x, y){
         $circle = $("<div class='hit_circle pink'>1</div>");
         $circle.css('left', x).css('top', y);
-        $('body').append($circle);
+        $('#playfield').append($circle);
         return $circle;
       }
     </script>
@@ -71,9 +85,7 @@
       <audio id="beatmap_music" controls></audio><br>
       <button>extract</button>
     </form>
-    <h2>hit circles</h2>
-    <div class="hit_circle blue relative">1</div>
-    <div class="hit_circle pink relative">3</div>
+    <h2>playfield</h2>
     <div id="playfield"></div>
   </body>
 </html>

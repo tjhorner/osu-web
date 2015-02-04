@@ -44,4 +44,5 @@ a {
 #playfield{
   width: 100%;
   height: 1000px;
+  position: relative;
 }
