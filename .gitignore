@@ -1,0 +1,5 @@
+# huge ass node modules
+node_modules/
+
+# beatmap data just in case i forget to delete it
+public/beatmap_data
